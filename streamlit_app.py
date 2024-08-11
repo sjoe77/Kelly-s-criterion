@@ -1,80 +1,120 @@
 import streamlit as st
 import locale
 
-st.title("An illustration of Kelly's Criterion")
 
-
-# Definitions
-
+# HELP / DEFINITIONS
 EQUITY_BALANCE= "The total capital available for investment."
 EXPECTED_RETURN= "The multiplier by which an investment's value might grow or shrink. "
+FRACTIONAL_KELLY= f"The Fractional Kelly Criterion is a risk management strategy derived from the full Kelly Criterion, which is used to determine the optimal size of a series of bets to maximize long-term growth of wealth. The Kelly Criterion considers both the odds of a bet and the probability of winning to decide how much of your capital you should risk."
 
-def calculate(equity_balance,exp_return, prob_win, prob_loss, stoploss_percent):
-    kelly_percent = (((exp_return * prob_win/100) - prob_loss/100)/exp_return)
-    locale.setlocale( locale.LC_ALL, 'en_US.UTF-8' )
-    rounded_kelly_percent = round(kelly_percent, 2)
-    print("Rounded Kelly Percent=" + str(rounded_kelly_percent))
-    position_kelly = rounded_kelly_percent * equity_balance
-    position_fractional_kelly =   position_kelly * .3333
-   
-    pos_risk=stoploss_percent * position_fractional_kelly/100 
-    percent_risk_on_equity=(pos_risk/equity_balance)
-    st.session_state["position_kelly"]=locale.currency(position_kelly)
-    st.session_state["position_fractional_kelly"]= locale.currency(int(position_fractional_kelly)).split('.')[0]
-    print("K=" +  st.session_state["position_kelly"])
-    print("FK=" +  st.session_state["position_fractional_kelly"])
-    print("Percent Risk on Equity=" + str(percent_risk_on_equity) )
-    st.session_state["pos_risk"]= locale.currency(pos_risk).split('.')[0]
-    st.session_state["percent_risk_on_equity"]="{:.2%}".format(percent_risk_on_equity)
-    return
+st.header("An illustration of Fractional Kelly's criterion", help=FRACTIONAL_KELLY ,divider="gray")
+
+
+
+def is_positive_number(value):
+    if isinstance(value, (int, float)) and value > 0:
+        return True
+    return False
+
+# Checks if all elements of a list are positive values > 0 or else return false
+def all_positive_numbers(values):
+    return all(is_positive_number(value) for value in values)
+
+
+
+def calculate():
+    # Get input values from Session state
+    equity_balance=st.session_state["equity_balance"]
+    exp_return=st.session_state["exp_return"]
+    prob_win=st.session_state["prob_win"] 
+    prob_loss=100-st.session_state["prob_win"]
+    stoploss_percent=st.session_state["stoploss_percent"]
+
+    if all_positive_numbers([equity_balance,exp_return,prob_win,prob_loss]):
+        kelly_percent = (((exp_return * prob_win/100) - prob_loss/100)/exp_return)
+        locale.setlocale( locale.LC_ALL, 'en_US.UTF-8' )
+        rounded_kelly_percent = round(kelly_percent, 2)
+        print("Rounded Kelly Percent=" + str(rounded_kelly_percent))
+        position_kelly = rounded_kelly_percent * equity_balance
+        position_fractional_kelly =   position_kelly * .3333
+        
+        # Set if worth investing
+        if (position_fractional_kelly <0):
+            st.session_state["worth_investing"]=False
+        else:
+            st.session_state["worth_investing"]=True
+
+        pos_risk=stoploss_percent * position_fractional_kelly/100 
+        percent_risk_on_equity=(pos_risk/equity_balance)
+        st.session_state["position_kelly"]=locale.currency(position_kelly)
+        st.session_state["position_fractional_kelly"]= locale.currency(int(position_fractional_kelly)).split('.')[0]
+        print("K=" +  st.session_state["position_kelly"])
+        print("FK=" +  st.session_state["position_fractional_kelly"])
+        print("Percent Risk on Equity=" + str(percent_risk_on_equity) )
+        st.session_state["pos_risk"]= locale.currency(pos_risk).split('.')[0]
+        st.session_state["percent_risk_on_equity"]="{:.2%}".format(percent_risk_on_equity)
+        st.session_state["show_results"]=True
+    else:
+        st.session_state["show_results"]=False
 
 def reset():
     # Delete all the items in Session state
     for key in st.session_state.keys():
         del st.session_state[key]
 
+def clear():
+    # Delete all the items in Session state
+    for key in st.session_state.keys():
+        st.session_state[key]=None
+    st.session_state["prob_win"] = 50
+    st.session_state["stoploss_percent"] = 10
 
 # Initialize imputs values for equity balance, win probaility when coming in first time
-# This give user's a loaded example of how this works
+# This give user's a sample/example of how this works
 if not len(st.session_state.keys()):
     st.session_state["equity_balance"] = 20000
-    st.session_state["exp_return"] = 4.04
-    st.session_state["prob_win"] = 59
-    st.session_state["prob_loss"] = 41
+    st.session_state["exp_return"] = 4
+    st.session_state["prob_win"] = 60
+    st.session_state["prob_loss"] = 40
     st.session_state["stoploss_percent"] = 10
-    calculate(st.session_state["equity_balance"],st.session_state["exp_return"], st.session_state["prob_win"], st.session_state["prob_loss"],st.session_state["stoploss_percent"])
+    calculate()
 
-
-equity_balance = st.number_input("Equity balance", key="equity_balance",min_value=1, help=EQUITY_BALANCE)
-
-exp_return = st.number_input("Expected return", key="exp_return",help=EXPECTED_RETURN)
-
-prob_win = st.number_input("Probability of winning", key="prob_win" , min_value=0, max_value=100)
-
-prob_loss = st.number_input("Probability of losing", key="prob_loss" ,min_value=0, max_value=100)
-
-stoploss_percent = st.number_input(
-    "Stop loss percentage", key="stoploss_percent", min_value=0, max_value=100)
-
-
-
-st.subheader("Results", divider="orange")
-
-st.metric("Recommended position size", st.session_state["position_fractional_kelly"], delta=None,  help="None", )
-st.metric("Position risk", st.session_state["pos_risk"], delta=None,  help="None", )
-st.metric("Percent risk on equity", st.session_state["percent_risk_on_equity"], delta=None,  help="None", )
+#Inputs
+leftCol, rightCol = st.columns(2)
+with leftCol:
+    equity_balance = st.number_input("Equity balance", key="equity_balance", help=EQUITY_BALANCE,  on_change=calculate)
+    prob_win = st.slider("Probability of winning", key="prob_win" , min_value=0, max_value=100, on_change=calculate)
+    
+with rightCol:
+    exp_return = st.number_input("Expected return multiplier", key="exp_return",help=EXPECTED_RETURN, on_change=calculate)
+    stoploss_percent = st.slider("Stop loss percentage", key="stoploss_percent", min_value=0, max_value=100, on_change=calculate) 
 
 
 
+if st.session_state["show_results"]:
+    st.subheader("Results", divider="orange")
+    if st.session_state["worth_investing"]:
+        r1, r2, r3 = st.columns(3)
+        with r1:
+            st.metric("Recommended position size", st.session_state["position_fractional_kelly"], delta=None,  help="None", )
+        with r2:
+            st.metric("Position risk", st.session_state["pos_risk"], delta=None,  help="None", )
+        with r3:
+            st.metric("Percent risk on equity", st.session_state["percent_risk_on_equity"], delta=None,  help="None", )
+    else:
+        
+        st.warning("Not worth investing",icon="⚠️")
+   
 
-col1, col2 = st.columns(2)
 
-with col1:
-    st.button("Calculate",on_click=calculate, args=(equity_balance,exp_return, prob_win, prob_loss,stoploss_percent))
-with col2:
-    st.button("Reset",on_click=reset)
+reset_btn_col, clear_btn_col = st.columns(2)
 
+    
+with reset_btn_col:
+    st.button("Show me an example",on_click=reset)
 
+with clear_btn_col:
+    st.button("Clear",on_click=clear)
     
 
 
