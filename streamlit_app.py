@@ -58,7 +58,10 @@ def calculate():
         else:
             st.session_state["worth_investing"]=True
 
-        pos_risk=stoploss_percent * position_fractional_kelly/100 
+        pos_risk = position_fractional_kelly
+        if stoploss_percent > 0:
+            pos_risk=stoploss_percent * position_fractional_kelly/100 
+        
         percent_risk_on_equity=(pos_risk/equity_balance)
         st.session_state["position_kelly"]=format_currency(position_kelly)
         st.session_state["position_fractional_kelly"]= format_currency(position_fractional_kelly)
