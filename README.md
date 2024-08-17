@@ -1,4 +1,4 @@
-# 🎈 Blank app template
+# 🎈 An illustration of Kelly Criterion
 
 A simple Streamlit app template for you to modify!
 
