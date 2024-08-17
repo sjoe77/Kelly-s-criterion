@@ -86,10 +86,11 @@ def calculate():
             kelly_percent=round(kelly_percent * .3333,2)
         position_kelly = kelly_percent * equity_balance
        
-        
+        print("Postion kelly=" + str(position_kelly))
         # Set if worth investing
-        if (position_kelly <0):
+        if (position_kelly <= 0):
             st.session_state["worth_investing"]=False
+            return
         else:
             st.session_state["worth_investing"]=True
 
@@ -167,7 +168,7 @@ if st.session_state["show_results"]:
             st.metric("Percent risk on equity", st.session_state["percent_risk_on_equity"], delta=None,  help="Investment amount as a percentage of available equity amount", )
         with c3:
             fig = px.pie(st.session_state["pie_df"],  values='values', names='labels', hole=0.7)
-            fig.update_layout(legend=dict(y=0.5),margin=dict(l=10, r=10, t=10, b=10),width=500, height=300) 
+            fig.update_layout(legend=dict(y=0.5),margin=dict(l=20, r=20, t=10, b=10),width=500, height=300) 
             config={
                 'displayModeBar': False
             }
