@@ -131,6 +131,7 @@ def clear():
         st.session_state[key]=None
     st.session_state["prob_win"] = 50
     st.session_state["stoploss_percent"] = 10
+    st.session_state["criteria"] = "Fractional Kelly"
 
 # Initialize imputs values for equity balance, win probaility when coming in first time
 # This give user's a sample/example of how this works
