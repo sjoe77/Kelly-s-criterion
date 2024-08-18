@@ -169,11 +169,11 @@ if st.session_state["show_results"]:
             st.metric("Percent risk on equity", st.session_state["percent_risk_on_equity"], delta=None,  help="Investment amount as a percentage of available equity amount", )
         with c3:
             fig = px.pie(st.session_state["pie_df"],  values='values', names='labels', hole=0.7)
-            fig.update_layout(legend=dict(y=0.5),margin=dict(l=20, r=20, t=10, b=10),width=500, height=300) 
+            fig.update_layout(legend=dict(x=1.5,y=0.5),margin=dict(l=75, r=75, t=10, b=10),width=600, height=300) 
             config={
                 'displayModeBar': False
             }
-            fig.update_traces(hovertemplate = "$%{value} (%{percent})", textposition='outside',texttemplate=' %{value} (%{percent})') 
+            fig.update_traces(hovertemplate = "$%{value} (%{percent})", textposition='outside',texttemplate=' $%{value} (%{percent})') 
         st.plotly_chart(fig,  theme="streamlit", config=config) 
     else:
         
