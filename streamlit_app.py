@@ -6,10 +6,12 @@ import numpy as np
 # HELP / DEFINITIONS
 EQUITY_BALANCE= "The total capital available for investment."
 EXPECTED_RETURN= "The multiplier by which an investment's value might grow or shrink. "
-FRACTIONAL_KELLY= f"The Fractional Kelly Criterion is a risk management strategy derived from the full Kelly Criterion, which is used to determine the optimal size of a series of bets to maximize long-term growth of wealth. The Kelly Criterion considers both the odds of a bet and the probability of winning to decide how much of your capital you should risk."
+FRACTIONAL_KELLY= f"""The Kelly Criterion considers both the odds of a bet and 
+the probability of winning to decide how much of your capital you should risk. The Fractional Kelly Criterion(we will use 33%)  is a risk management strategy derived from the full Kelly Criterion, 
+which is used to determine the optimal size of a series of bets to maximize long-term growth of wealth"""
+FRACTIONAL_KELLY_PERCENT= "Fractional Kelly (33%)"
 
 
-st.header("An illustration of Fractional Kelly's criterion", help=FRACTIONAL_KELLY ,divider="orange")
 
 
 
@@ -82,7 +84,7 @@ def calculate():
     if all_is_number([equity_balance,exp_return,prob_win,prob_loss]) and all_positive_numbers([equity_balance]) :
         kelly_percent = (((exp_return * prob_win/100) - prob_loss/100)/exp_return)
         kelly_percent = round(kelly_percent, 2)
-        if criteria=="Fractional Kelly":
+        if criteria==FRACTIONAL_KELLY_PERCENT:
             kelly_percent=round(kelly_percent * .3333,2)
         position_kelly = kelly_percent * equity_balance
        
@@ -131,7 +133,7 @@ def clear():
         st.session_state[key]=None
     st.session_state["prob_win"] = 50
     st.session_state["stoploss_percent"] = 10
-    st.session_state["criteria"] = "Fractional Kelly"
+    st.session_state["criteria"] = FRACTIONAL_KELLY_PERCENT
 
 # Initialize imputs values for equity balance, win probaility when coming in first time
 # This give user's a sample/example of how this works
@@ -141,11 +143,15 @@ if not len(st.session_state.keys()):
     st.session_state["prob_win"] = 60
     st.session_state["prob_loss"] = 40
     st.session_state["stoploss_percent"] = 10
-    st.session_state["criteria"] = "Fractional Kelly"
+    st.session_state["criteria"] = FRACTIONAL_KELLY_PERCENT
     calculate()
 
+
+### Render UI###
+st.header("An illustration of Kelly's criterion", help=FRACTIONAL_KELLY ,divider="blue")
+
 #Inputs
-criteria = st.radio("Criteria", ["Kelly", "Fractional Kelly"], key="criteria", horizontal=True,label_visibility="hidden" ,on_change=calculate)
+criteria = st.radio("Criteria", ["Kelly", FRACTIONAL_KELLY_PERCENT], key="criteria", horizontal=True,label_visibility="hidden" ,on_change=calculate)
 leftCol, rightCol = st.columns(2)
 with leftCol:
     equity_balance = st.number_input("Equity balance", key="equity_balance", help=EQUITY_BALANCE,  on_change=calculate)
@@ -158,7 +164,7 @@ with rightCol:
 
 
 if st.session_state["show_results"]:
-    st.subheader("Results", divider="orange")
+    st.subheader("Results", divider="blue")
     if st.session_state["worth_investing"]:
         c1, c2,c3 = st.columns(3)
         with c1:
@@ -193,7 +199,7 @@ with clear_btn_col:
 
 
 
-st.subheader("References", divider="orange")
+st.subheader("References", divider="blue")
 
 st.markdown("""
                         
